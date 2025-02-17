@@ -20,7 +20,7 @@ class ArgsNamespace:
 
 if __name__ == "__main__":
 
-    dataset_path = os.path.join(os.getcwd(), "NYC")
+    dataset_path = os.path.join(os.getcwd(), "Data processed/NYC")
     if not os.path.exists(dataset_path):
         os.makedirs(dataset_path)
     KG = KGDataset(dataset_path, False)
