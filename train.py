@@ -36,7 +36,7 @@ def train(args):
     # create dataset
     #dataset_path = os.path.join(DATA_PATH, args.dataset)
     #print(dataset_path)
-    dataset_path = "/home/rhaton/test/MetaMobility/knowledge_graph/newyork/Data processed/NYC"
+    dataset_path = "Data processed/NYC"
     #print(dataset_path)
     dataset = KGDataset(dataset_path, args.debug)
     args.sizes = dataset.get_shape()
