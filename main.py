@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     KG = KGDataset(dataset_path, False)
     
-    KG_NYC = "./Data processed/NYC/UrbanKG_NYC.txt"
+    KG_NYC = "Data processed/NYC/UrbanKG_NYC.txt"
     entity2id_NYC = "./Data processed/entity2id_NYC.txt"
     relation2id_NYC = "./Data processed/relation2id_NYC.txt"
     triple_NYC = "./Data processed/triplets_NYC.txt"
