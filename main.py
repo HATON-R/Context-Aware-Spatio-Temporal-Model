@@ -10,6 +10,7 @@ from shapely.geometry import Point
 import random
 import pickle
 import os
+import subprocess
 
 from KG_sets import get_entity2id_relation2id, produce_train_val_test, get_train_val_test, KGDataset, process_dataset, get_embeddings
 from train import train
@@ -19,6 +20,8 @@ class ArgsNamespace:
         self.__dict__.update(args_dict)
 
 if __name__ == "__main__":
+
+    subprocess.run(["python", "Construct_KG"])
 
     dataset_path = os.path.join(os.getcwd(), "Data processed/NYC")
     if not os.path.exists(dataset_path):
