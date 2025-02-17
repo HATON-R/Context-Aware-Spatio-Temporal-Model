@@ -19,6 +19,11 @@ class ArgsNamespace:
         self.__dict__.update(args_dict)
 
 if __name__ == "__main__":
+
+    dataset_path = os.path.join(os.getcwd(), "NYC")
+    if not os.path.exists(dataset_path):
+        os.makedirs(dataset_path)
+    KG = KGDataset(dataset_path, False)
     
     KG_NYC = "./Data processed/NYC/data/UrbanKG_NYC.txt"
     entity2id_NYC = "./Data processed/entity2id_NYC.txt"
@@ -45,9 +50,6 @@ if __name__ == "__main__":
                 pickle.dump(dataset_examples[dataset_split], save_file)
         with open(os.path.join(dataset_path, "to_skip.pickle"), "wb") as save_file:
             pickle.dump(dataset_filters, save_file)
-
-    dataset_path = "/home/rhaton/test/MetaMobility/knowledge_graph/newyork/Data processed/NYC"
-    KG = KGDataset(dataset_path, False)
 
     # Configuration
     os.environ['CUDA_VISIBLE_DEVICES'] = '3'
