@@ -41,7 +41,7 @@ if __name__ == "__main__":
     produce_train_val_test(KG_NYC, entity2id_NYC, relation2id_NYC, triple_NYC)
     get_train_val_test(triple_NYC, train_NYC, valid_NYC, test_NYC)
 
-    data_path = "/home/rhaton/test/MetaMobility/knowledge_graph/newyork/Data processed"
+    data_path = os.path.join(os.getcwd(), "Data processed/NYC")
     print(data_path)
     for dataset_name in os.listdir(data_path):
         if dataset_name != "NYC":
