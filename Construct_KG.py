@@ -133,7 +133,7 @@ PLA.extend(ALB)
 PLA.extend(BNB)
 PLA.extend(ANA)
 PLA.extend(PHPC)
-with open(r'./Data processed/NYC/UrbanKG_NYC.txt','w') as file:
+with open(r'Data processed/NYC/UrbanKG_NYC.txt','w') as file:
     for i in range(len(PLA)):
         file.write(PLA[i])
         file.write('\n')

@@ -26,7 +26,6 @@ import optimizers.regularizers as regularizers
 def get_entity2id_relation2id(KG, entity2id, relation2id):
     entity = []
     relations = []
-    print(KG)
     with open(KG) as f:
         for line in f.readlines():
             temp = line.split()
