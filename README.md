@@ -19,6 +19,7 @@ To install packages from a `requirements.txt` file:
 ```bash
 pip install -r requirements.txt
 ```
+# Running the code
 
 ## Running the Construct KG code
 
