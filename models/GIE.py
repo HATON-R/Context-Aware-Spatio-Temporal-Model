@@ -57,7 +57,7 @@ class GIE(BaseH):
         self.context_vec = nn.Embedding(self.sizes[1], self.rank)
         self.context_vec.weight.data = self.init_size * torch.randn((self.sizes[1], self.rank), dtype=self.data_type)
         self.act = nn.Softmax(dim=1)
-        device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        device = torch.device("cpu")
         if args.dtype == "double":
             self.scale = torch.Tensor([1. / np.sqrt(self.rank)]).double().to(device)
         else:
