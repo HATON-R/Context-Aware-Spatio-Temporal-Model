@@ -21,12 +21,12 @@ pip install -r requirements.txt
 ```
 # Running the code
 
-## Running the Construct KG code
+1. **Running the Construct KG code:**
 
 ```bash
 python Construct_KG.py
 ```
-## Running the KGE code
+2. **Running the KGE code:**
 
 ```bash
 python main.py
