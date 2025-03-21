@@ -126,9 +126,9 @@ def get_idx(path):
         with open(os.path.join(path, split), "r") as lines:
             for line in lines:
                 lhs, rel, rhs = line.strip().split("\t")
-                entities.add(lhs)
-                entities.add(rhs)
-                relations.add(rel)
+                entities.add(int(lhs))
+                entities.add(int(rhs))
+                relations.add(int(rel))
     ent2idx = {x: i for (i, x) in enumerate(sorted(entities))}
     rel2idx = {x: i for (i, x) in enumerate(sorted(relations))}
 
@@ -150,7 +150,7 @@ def to_np_array(dataset_file, ent2idx, rel2idx):
         for line in lines:
             lhs, rel, rhs = line.strip().split("\t")
             try:
-                examples.append([ent2idx[lhs], rel2idx[rel], ent2idx[rhs]])
+                examples.append([ent2idx[int(lhs)], rel2idx[int(rel)], ent2idx[int(rhs)]])
             except ValueError:
                 continue
     return np.array(examples).astype("int64")
