@@ -25,9 +25,9 @@ if __name__ == "__main__":
         os.makedirs(dataset_path)
     
     KG_NYC = "Data_processed/NYC/UrbanKG_NYC.txt"
-    entity2id_NYC = "./Data_processed/entity2id_NYC.txt"
-    relation2id_NYC = "./Data_processed/relation2id_NYC.txt"
-    triple_NYC = "./Data_processed/triplets_NYC.txt"
+    entity2id_NYC = "./Data_processed/NYC/entity2id_NYC.txt"
+    relation2id_NYC = "./Data_processed/NYC/relation2id_NYC.txt"
+    triple_NYC = "./Data_processed/NYC/triplets_NYC.txt"
     train_NYC = './Data_processed/NYC/train'
     valid_NYC = './Data_processed/NYC/valid'
     test_NYC = './Data_processed/NYC/test'
@@ -36,22 +36,25 @@ if __name__ == "__main__":
     produce_train_val_test(KG_NYC, entity2id_NYC, relation2id_NYC, triple_NYC)
     get_train_val_test(triple_NYC, train_NYC, valid_NYC, test_NYC)
 
-    data_path = os.path.join(os.getcwd(), "Data_processed/NYC")
-    print(data_path)
+    data_path = os.path.join(os.getcwd(), "Data_processed")
+
     for dataset_name in os.listdir(data_path):
         if dataset_name != "NYC":
             continue
-        dataset_path = os.path.join(data_path, dataset_name)
-        dataset_examples, dataset_filters = process_dataset(dataset_path, dataset_name)
-        for dataset_split in ["train", "valid", "test"]:
-            save_path = os.path.join(dataset_path, dataset_split + ".pickle")
-            with open(save_path, "wb") as save_file:
-                pickle.dump(dataset_examples[dataset_split], save_file)
-        with open(os.path.join(dataset_path, "to_skip.pickle"), "wb") as save_file:
-            pickle.dump(dataset_filters, save_file)
+        else:
+            print(dataset_name)
+            print("1",dataset_path)
+            dataset_path = os.path.join(data_path, dataset_name)
+            dataset_examples, dataset_filters = process_dataset(dataset_path, dataset_name)
+            for dataset_split in ["train", "valid", "test"]:
+                save_path = os.path.join(dataset_path, dataset_split + ".pickle")
+                with open(save_path, "wb") as save_file:
+                    pickle.dump(dataset_examples[dataset_split], save_file)
+            with open(os.path.join(dataset_path, "to_skip.pickle"), "wb") as save_file:
+                pickle.dump(dataset_filters, save_file)
 
-    KG = KGDataset(dataset_path, False)
-
+    #KG = KGDataset(dataset_path, False)
+"""
     # Configuration
     os.environ['CUDA_VISIBLE_DEVICES'] = '3'
     
@@ -106,3 +109,4 @@ if __name__ == "__main__":
     }
     args_model_obj = ArgsNamespace(args_model)    
     train(args_model_obj)
+"""

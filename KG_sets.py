@@ -120,6 +120,8 @@ def get_idx(path):
       ent2idx: Dictionary mapping raw entities to unique ids
       rel2idx: Dictionary mapping raw relations to unique ids
     """
+
+    print(path)
     entities, relations = set(), set()
     for split in ["train", "valid", "test"]:
         print(os.path.join(path, split))
@@ -189,9 +191,7 @@ def process_dataset(path, dataset_name):
       examples: Dictionary mapping splits to with Numpy array containing corresponding KG triples.
       filters: Dictionary containing filters for lhs and rhs predictions.
     """
-    data_path = "/home/rhaton/test/MetaMobility/knowledge_graph/newyork/Data_processed"
-    dataset_path = os.path.join(data_path, dataset_name)
-    ent2idx, rel2idx = get_idx(dataset_path)
+    ent2idx, rel2idx = get_idx(path)
 
     entity_idx = list(ent2idx.keys())
     relations_idx = list(rel2idx.keys())
@@ -227,7 +227,7 @@ class KGDataset(object):
              debug: boolean indicating whether to use debug mode or not
              if true, the dataset will only contain 1000 examples for debugging.
         """
-        self.data_path = os.path.join(os.getcwd(), data_path)
+        self.data_path = data_path
         self.debug = debug
         self.data = {}
         for split in ["train", "test", "valid"]:
