@@ -20,17 +20,17 @@ class ArgsNamespace:
 
 if __name__ == "__main__":
 
-    dataset_path = os.path.join(os.getcwd(), "Data processed/NYC")
+    dataset_path = os.path.join(os.getcwd(), "Data_processed/NYC")
     if not os.path.exists(dataset_path):
         os.makedirs(dataset_path)
     
-    KG_NYC = "Data processed/NYC/UrbanKG_NYC.txt"
-    entity2id_NYC = "./Data processed/entity2id_NYC.txt"
-    relation2id_NYC = "./Data processed/relation2id_NYC.txt"
-    triple_NYC = "./Data processed/triplets_NYC.txt"
-    train_NYC = './Data processed/NYC/train'
-    valid_NYC = './Data processed/NYC/valid'
-    test_NYC = './Data processed/NYC/test'
+    KG_NYC = "Data_processed/NYC/UrbanKG_NYC.txt"
+    entity2id_NYC = "./Data_processed/entity2id_NYC.txt"
+    relation2id_NYC = "./Data_processed/relation2id_NYC.txt"
+    triple_NYC = "./Data_processed/triplets_NYC.txt"
+    train_NYC = './Data_processed/NYC/train'
+    valid_NYC = './Data_processed/NYC/valid'
+    test_NYC = './Data_processed/NYC/test'
     
     get_entity2id_relation2id(KG_NYC, entity2id_NYC, relation2id_NYC)
     produce_train_val_test(KG_NYC, entity2id_NYC, relation2id_NYC, triple_NYC)
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     KG = KGDataset(dataset_path, False)
 
-    data_path = os.path.join(os.getcwd(), "Data processed/NYC")
+    data_path = os.path.join(os.getcwd(), "Data_processed/NYC")
     print(data_path)
     for dataset_name in os.listdir(data_path):
         if dataset_name != "NYC":

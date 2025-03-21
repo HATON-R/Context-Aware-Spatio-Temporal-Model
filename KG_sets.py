@@ -189,7 +189,7 @@ def process_dataset(path, dataset_name):
       examples: Dictionary mapping splits to with Numpy array containing corresponding KG triples.
       filters: Dictionary containing filters for lhs and rhs predictions.
     """
-    data_path = "/home/rhaton/test/MetaMobility/knowledge_graph/newyork/Data processed"
+    data_path = "/home/rhaton/test/MetaMobility/knowledge_graph/newyork/Data_processed"
     dataset_path = os.path.join(data_path, dataset_name)
     ent2idx, rel2idx = get_idx(dataset_path)
 
@@ -274,7 +274,7 @@ class KGDataset(object):
 
 ## Embeddings functions
 def get_embeddings(args):
-    DATA_PATH = 'Data processed'
+    DATA_PATH = 'Data_processed'
     dataset_path = os.path.join(DATA_PATH, args.dataset)
     #print("Dataset path:", dataset_path)
 

@@ -18,7 +18,7 @@ dataframe1 = gpd.read_file('./Data/Administrative_data/Borough/Borough.shp')
 dataframe1 = dataframe1.to_crs('EPSG:4326')
 seleceted_colums1 = ['BoroCode', 'BoroName', 'geometry']
 borough_dataframe = dataframe1[seleceted_colums1]
-borough_dataframe.to_csv('./Data processed/NYC/NYC_borough.csv')
+borough_dataframe.to_csv('./Data_processed/NYC/NYC_borough.csv')
 
 
 ## Area
@@ -29,7 +29,7 @@ area_dataframe = dataframe2[seleceted_colums2]
 area_dataframe = area_dataframe[area_dataframe['OBJECTID'] != 1]
 area_dataframe = area_dataframe[area_dataframe['OBJECTID'] != 103]
 area_dataframe = area_dataframe[area_dataframe['OBJECTID'] != 104]
-area_dataframe.to_csv('./Data processed/NYC/NYC_area.csv')
+area_dataframe.to_csv('./Data_processed/NYC/NYC_area.csv')
 
 
 ## POI align to BOROUGH / AREA
@@ -54,7 +54,7 @@ for i in tqdm(range(poi_datanumpy.shape[0])):
 poi_dataframe[['borough_id', 'area_id']] = poi_borough_area_id
 poi_dataframe = poi_dataframe[ (poi_dataframe['borough_id'] != 999)]
 poi_dataframe = poi_dataframe[ (poi_dataframe['area_id'] != 999)]
-poi_dataframe.to_csv('./Data processed/NYC/NYC_poi.csv')
+poi_dataframe.to_csv('./Data_processed/NYC/NYC_poi.csv')
 
 
 #########################################################################
@@ -99,7 +99,7 @@ for i in tqdm(range(area_dataframe.shape[0])):
 
 ## Relation 3 POI Locates at Area PLA
 PLA = []
-poi_dataframe = pd.read_csv('./Data processed/NYC/NYC_poi.csv')
+poi_dataframe = pd.read_csv('./Data_processed/NYC/NYC_poi.csv')
 poi_datanumpy = np.array(poi_dataframe[[ "location_id", "borough_id", "area_id", "categorie"]])
 for i in tqdm(range(poi_datanumpy.shape[0])):
     PLA.append('POI/' + str(poi_datanumpy[i][0]) + ' PLA ' + 'Area/' + str(poi_datanumpy[i][2]))
@@ -133,7 +133,7 @@ PLA.extend(ALB)
 PLA.extend(BNB)
 PLA.extend(ANA)
 PLA.extend(PHPC)
-with open(r'Data processed/NYC/UrbanKG_NYC.txt','w') as file:
+with open(r'Data_processed/NYC/UrbanKG_NYC.txt','w') as file:
     for i in range(len(PLA)):
         file.write(PLA[i])
         file.write('\n')
