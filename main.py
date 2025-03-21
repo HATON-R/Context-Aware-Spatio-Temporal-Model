@@ -36,8 +36,6 @@ if __name__ == "__main__":
     produce_train_val_test(KG_NYC, entity2id_NYC, relation2id_NYC, triple_NYC)
     get_train_val_test(triple_NYC, train_NYC, valid_NYC, test_NYC)
 
-    KG = KGDataset(dataset_path, False)
-
     data_path = os.path.join(os.getcwd(), "Data_processed/NYC")
     print(data_path)
     for dataset_name in os.listdir(data_path):
@@ -51,6 +49,8 @@ if __name__ == "__main__":
                 pickle.dump(dataset_examples[dataset_split], save_file)
         with open(os.path.join(dataset_path, "to_skip.pickle"), "wb") as save_file:
             pickle.dump(dataset_filters, save_file)
+
+    KG = KGDataset(dataset_path, False)
 
     # Configuration
     os.environ['CUDA_VISIBLE_DEVICES'] = '3'
