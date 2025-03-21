@@ -8,6 +8,7 @@ from shapely.geometry import MultiPolygon
 import numpy as np
 from shapely.geometry import Point
 import random
+import os
 
 #########################################################################
 ############################ Create relation ############################
@@ -18,6 +19,8 @@ dataframe1 = gpd.read_file('./Data/Administrative_data/Borough/Borough.shp')
 dataframe1 = dataframe1.to_crs('EPSG:4326')
 seleceted_colums1 = ['BoroCode', 'BoroName', 'geometry']
 borough_dataframe = dataframe1[seleceted_colums1]
+if not os.path.exists("./Data_processed/NYC"):
+    os.makedirs("./Data_processed/NYC")
 borough_dataframe.to_csv('./Data_processed/NYC/NYC_borough.csv')
 
 
