@@ -53,8 +53,8 @@ if __name__ == "__main__":
             with open(os.path.join(dataset_path, "to_skip.pickle"), "wb") as save_file:
                 pickle.dump(dataset_filters, save_file)
 
-    #KG = KGDataset(dataset_path, False)
-"""
+    KG = KGDataset(dataset_path, False)
+
     # Configuration
     os.environ['CUDA_VISIBLE_DEVICES'] = '3'
     
@@ -62,8 +62,8 @@ if __name__ == "__main__":
         "dataset": "NYC",
         "model": "GIE",
         "optimizer": "Adam",
-        "max_epochs": 300,
-        "patience": 10,
+        "max_epochs": 10000,
+        "patience": 1000,
         "valid": 3,
         "rank": 32,
         "batch_size": 4120,
@@ -89,8 +89,8 @@ if __name__ == "__main__":
         "dataset": "NYC",  # Dataset à utiliser : "NYC" ou "CHI"
         "model": "GIE",  # Nom du modèle
         "optimizer": "Adam",  # Optimiseur : "Adagrad", "Adam" ou "SparseAdam"
-        "max_epochs": 300,  # Nombre maximal d'époques d'entraînement
-        "patience": 10,  # Nombre d'époques avant arrêt anticipé
+        "max_epochs": 10000,  # Nombre maximal d'époques d'entraînement
+        "patience": 1000,  # Nombre d'époques avant arrêt anticipé
         "valid": 3,  # Nombre d'époques entre les validations
         "rank": 32,  # Dimension des embeddings
         "batch_size": 4120,  # Taille des lots
@@ -109,4 +109,3 @@ if __name__ == "__main__":
     }
     args_model_obj = ArgsNamespace(args_model)    
     train(args_model_obj)
-"""
