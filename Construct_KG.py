@@ -37,6 +37,8 @@ area_dataframe.to_csv('./Data_processed/NYC_area.csv')
 
 ## POI align to BOROUGH / AREA
 poi_dataframe = pd.read_csv('./Data/newyork.csv')
+poi_dataframe = poi_dataframe[['user_id', 'location_id', 'latitude', 'longitude', 'previous', 'categorie', 'categorie_id']]
+poi_dataframe = poi_dataframe.drop_duplicates()
 poi_datanumpy = poi_dataframe[['longitude', 'latitude']].values
 poi_borough_area_id = np.full((poi_datanumpy.shape[0], 2), 999)
 for i in tqdm(range(poi_datanumpy.shape[0])):
@@ -102,8 +104,8 @@ for i in tqdm(range(area_dataframe.shape[0])):
 
 ## Relation 3 POI Locates at Area PLA
 PLA = []
-poi_dataframe = pd.read_csv('./Data_processed/NYC/NYC_poi.csv')
-poi_datanumpy = np.array(poi_dataframe[[ "location_id", "borough_id", "area_id", "categorie"]])
+poi_dataframe = pd.read_csv('./Data_processed/NYC_poi.csv')
+poi_datanumpy = np.array(poi_dataframe[[ "location_id", "borough_id", "area_id", "categorie"]].drop_duplicates())
 for i in tqdm(range(poi_datanumpy.shape[0])):
     PLA.append('POI/' + str(poi_datanumpy[i][0]) + ' PLA ' + 'Area/' + str(poi_datanumpy[i][2]))
 
