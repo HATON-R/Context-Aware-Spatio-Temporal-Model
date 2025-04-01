@@ -42,8 +42,6 @@ if __name__ == "__main__":
         if dataset_name != "NYC":
             continue
         else:
-            print(dataset_name)
-            print("1",dataset_path)
             dataset_path = os.path.join(data_path, dataset_name)
             dataset_examples, dataset_filters = process_dataset(dataset_path, dataset_name)
             for dataset_split in ["train", "valid", "test"]:
