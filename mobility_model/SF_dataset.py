@@ -29,8 +29,8 @@ class create_batch(Dataset):
         self.interval = interval
         self.data_path = data_path
         self.name_city = name_city
-        #self.matching_path = matching_path
-        #self.kge_path = kge_path
+        self.matching_path = matching_path
+        self.kge_path = kge_path
         super().__init__(root, transform)
 
     @property
