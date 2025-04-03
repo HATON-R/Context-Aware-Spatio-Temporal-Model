@@ -30,7 +30,7 @@ if __name__ == '__main__':
     """
     path = os.path.join(os.getcwd(), "processed/"+args.city)
 
-    dataset = create_batch(root="./", interval=args.hour, data_path="../data/dataset_TSMC2014_NYC.csv", name_city=args.city, matching_path="../knowledge_graph/Data_processed/NYC/entity2id_NYC.txt", kge_path="../knowledge_graph/logs/03_21/NYC/GIE_17_27_47")
+    dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/dataset_TSMC2014_NYC.csv", name_city=args.city, matching_path="../knowledge_graph/Data_processed/NYC/entity2id_NYC.txt", kge_path="../knowledge_graph/logs/03_21/NYC/GIE_17_27_47")
 
     folder_path = os.path.join(os.getcwd(), "processed/" + args.city + "/data_"+args.hour)
     nb_data = len([f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]) - 1
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     embedding_dynamic_size = args.embedding_dim
     out_channels = args.embedding_dim
     
-    epoch_loss_train, epoch_loss_val, epoch_loss_test = train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, args.hour, path_motif, out_channels, args.city)
+    #epoch_loss_train, epoch_loss_val, epoch_loss_test = train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, args.hour, path_motif, out_channels, args.city)
 
 
     """A = torch.load("/home/rhaton/MetaMobility/A_3.pt")
