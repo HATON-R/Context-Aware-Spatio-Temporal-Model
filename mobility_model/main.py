@@ -30,7 +30,14 @@ if __name__ == '__main__':
     """
     path = os.path.join(os.getcwd(), "processed/"+args.city)
 
-    dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/dataset_TSMC2014_NYC.csv", name_city=args.city, matching_path="../knowledge_graph/Data_processed/NYC/entity2id_NYC.txt", kge_path="../knowledge_graph/logs/03_21/NYC/GIE_17_27_47")
+    if args.city == "newyork":
+        dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/dataset_TSMC2014_NYC.csv", name_city=args.city, matching_path="../knowledge_graph/Data_processed/NYC/entity2id_NYC.txt", kge_path="../knowledge_graph/logs/03_21/NYC/GIE_17_27_47")
+    
+    if args.city == "sanfrancisco":
+        dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/sanfrancisco.csv", name_city=args.city, matching_path="../knowledge_graph/Data_processed/SF/entity2id_SF.txt", kge_path="../knowledge_graph/logs/03_21/SF/GIE_17_27_47")
+
+    if args.city == "tokyo":
+        dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/dataset_TSMC2014_TKY.csv", name_city=args.city, matching_path="../knowledge_graph/Data_processed/TKY/entity2id_TKY.txt", kge_path="../knowledge_graph/logs/03_21/TKY/GIE_17_27_47")
 
     folder_path = os.path.join(os.getcwd(), "processed/" + args.city + "/data_" + str(args.hour))
     nb_data = len([f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]) - 1
