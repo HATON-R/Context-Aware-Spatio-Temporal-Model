@@ -58,9 +58,9 @@ class create_batch(Dataset):
         idx = 0
 
         print("Files saved at this path",osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval)))
-        #kge = torch.load(self.kge_path +"/model.pt")["entity.weight"]
-        #os.makedirs(osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval)), exist_ok=True)
-        #torch.save(kge, osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval) + "/kg_embedding.pt"))
+        kge = torch.load(self.kge_path +"/model.pt")["entity.weight"]
+        os.makedirs(osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval)), exist_ok=True)
+        torch.save(kge, osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval) + "/kg_embedding.pt"))
         
         df = pd.read_csv(self.data_path)
         df_time = self.create_time(df)
@@ -70,10 +70,10 @@ class create_batch(Dataset):
         df_interval = self.columns_interval(df_user_loca_cate)
         df_delta = self.delta(df_interval)
         df_previous = self.previous(df_delta)
-        df_final = df_previous
-        #df_final = self.matching_GM_KG(df_previous)
+        #df_final = df_previous
+        df_final = self.matching_GM_KG(df_previous)
         df_final.to_csv(osp.join(osp.join(self.processed_dir, self.name_city), self.name_city + ".csv"), index=False)
-        df_final["test"] = df_final.iloc[:, 0]
+        #df_final["test"] = df_final.iloc[:, 0]
         
         # Create batch
         batch = [group.values.tolist() for _, group in df_final.groupby(str(self.interval) + "h_interval")]
@@ -300,7 +300,6 @@ class create_batch(Dataset):
                         data_df.append([uid, lid, time, lat, lon])
 
         df_data = pd.DataFrame(data_df, columns=['user_id', 'location_id', 'timestamp', 'latitude', 'longitude'])
-        #df_data["test"] = df_data.iloc[:, 0]
             
         return df_data
     
