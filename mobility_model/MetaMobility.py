@@ -1,24 +1,25 @@
 from model_jodie import JODIE
-from model_metaGNN import METAGCNConv, loss_gnn
+#from model_metaGNN import METAGCNConv, loss_gnn
 import torch
 from torch import nn
 import math
 
 class MetaMobility(nn.Module):
-    def __init__(self, num_users, num_locas, num_actis, embedding_dynamic_size, path_static, path_kg, device, num_context, out_channels, path_lon_lat):
+    def __init__(self, num_users, num_locas, num_actis, embedding_dynamic_size, path_kge, path_kg, device, num_context, out_channels):#, path_lon_lat):
         super(MetaMobility, self).__init__()
         self.device = device
         self.embedding_dynamic_size = embedding_dynamic_size
-        self.embedding_static = torch.Tensor(torch.load(path_static).X_static).to(self.device)
-        self.embedding_static_size = self.embedding_static.shape[1]
+        #self.embedding_static = torch.Tensor(torch.load(path_static).X_static).to(self.device)
+        #self.embedding_static_size = self.embedding_static.shape[1]
         self.num_users = num_users
         self.num_locas = num_locas
         self.num_actis = num_actis
         self.num_context = num_context
         self.out_channels = out_channels
-        self.path_lon_lat = path_lon_lat
-        self.jodie = JODIE(self.embedding_dynamic_size, path_static, path_kg, self.num_users, self.num_locas, self.num_actis, self.path_lon_lat, self.device).to(self.device)
-        self.metaGCNConv = METAGCNConv(self.num_context, self.embedding_dynamic_size, self.out_channels, "cpu")#self.device)
+        #self.path_lon_lat = path_lon_lat
+        #self.jodie = JODIE(self.embedding_dynamic_size, path_static, path_kg, self.num_users, self.num_locas, self.num_actis, self.path_lon_lat, self.device).to(self.device)
+        self.jodie = JODIE(self.embedding_dynamic_size, path_kge, path_kg, self.num_users, self.num_locas, self.num_actis, self.device).to(self.device)
+        #self.metaGCNConv = METAGCNConv(self.num_context, self.embedding_dynamic_size, self.out_channels, "cpu")#self.device)
         
     def forward(self, X_jodie, X_meta, events, super_edge_index):
         """

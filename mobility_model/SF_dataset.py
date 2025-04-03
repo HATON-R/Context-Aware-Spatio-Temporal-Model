@@ -31,7 +31,7 @@ class create_batch(Dataset):
         self.name_city = name_city
         self.matching_path = matching_path
         self.kge_path = kge_path
-        super().__init__(root, transform, pre_transform, pre_filter)
+        super().__init__(root, transform)
 
     @property
     def raw_file_names(self):
@@ -57,9 +57,10 @@ class create_batch(Dataset):
     def process(self):
         idx = 0
 
-        print("Files saved at this path",osp.join(self.processed_dir, "data_" + str(self.interval)))
+        print("Files saved at this path",osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval)))
         kge = torch.load(self.kge_path +"/model.pt")["entity.weight"]
-        torch.save(kge, osp.join(self.processed_dir, "data_" + str(self.interval) + "/kg_embedding.pt"))
+        os.makedirs(osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval)), exist_ok=True)
+        torch.save(kge, osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval) + "/kg_embedding.pt"))
         
         df = pd.read_csv(self.data_path)
         df_time = self.create_time(df)
@@ -70,7 +71,7 @@ class create_batch(Dataset):
         df_delta = self.delta(df_interval)
         df_previous = self.previous(df_delta)
         df_final = self.matching_GM_KG(df_previous)
-        df_final.to_csv(osp.join(self.processed_dir, self.name_city + ".csv"), index=False)
+        df_final.to_csv(osp.join(osp.join(self.processed_dir, self.name_city), self.name_city + ".csv"), index=False)
         
         # Create batch
         batch = [group.values.tolist() for _, group in df_final.groupby(str(self.interval) + "h_interval")]
@@ -92,11 +93,8 @@ class create_batch(Dataset):
                         num_locations=num_locas,
                         num_activities=num_actis
                        )
-            if not os.path.exists(osp.join(self.processed_dir, "data_" + str(self.interval))):
-                os.makedirs(osp.join(self.processed_dir, "data_" + str(self.interval)))
-                torch.save(data, osp.join(self.processed_dir, "data_" + str(self.interval) + "/data_" + str(idx) + ".pt"))
-            else:
-                torch.save(data, osp.join(self.processed_dir, "data_" + str(self.interval) + "/data_" + str(idx) + ".pt"))
+            
+            torch.save(data, osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval) + "/data_" + str(idx) + ".pt"))
             idx += 1
 
     def create_time(self, dataframe):

@@ -1,6 +1,6 @@
-from preprocessing import SanFranciscoDataset
+from SF_dataset import create_batch
 from train_evaluate import train_evaluate
-from model_metaGNN import METAGCNConv, loss_gnn
+#from model_metaGNN import METAGCNConv, loss_gnn
 
 import torch
 import argparse
@@ -20,30 +20,27 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     path_motif = os.path.join(os.getcwd(), args.name_motif)
-    
+    """
     if args.name_motif == "motifs_0.json":
         nb_motifs = os.path.getsize(path_motif)
     else:
         with open(path_motif, "r") as json_file:
             data = json.load(json_file)
         nb_motifs = len(data)
+    """
+    path = os.path.join(os.getcwd(), "processed/"+args.city)
 
-    path = os.path.join(os.getcwd(), args.city)
-    interval = args.hour
+    dataset = create_batch(root="./", interval=args.hour, data_path="../data/dataset_TSMC2014_NYC.csv", name_city=args.city, matching_path="../knowledge_graph/Data_processed/NYC/entity2id_NYC.txt", kge_path="../knowledge_graph/logs/03_21/NYC/GIE_17_27_47")
+
+    folder_path = os.path.join(os.getcwd(), "processed/" + args.city + "/data_"+args.hour)
+    nb_data = len([f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]) - 1
     
-    if args.city == "sanfrancisco":
-        dataset = SanFranciscoDataset(root=path + "/data_" + str(interval) + "/", interval=interval, path=os.getcwd(), path_motif=path_motif, h_3=args.h3)
-        nb_data = len(dataset)
-
-    folder_path = "/home/rhaton/test/MetaMobility/" + args.city + "/data_" + str(interval) + "/processed"
-    nb_data = len([f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]) - 2
-
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     epoch = args.epochs
     embedding_dynamic_size = args.embedding_dim
     out_channels = args.embedding_dim
     
-    epoch_loss_train, epoch_loss_val, epoch_loss_test = train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interval, path_motif, nb_motifs, out_channels, args.city)
+    epoch_loss_train, epoch_loss_val, epoch_loss_test = train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, args.hour, path_motif, out_channels, args.city)
 
 
     """A = torch.load("/home/rhaton/MetaMobility/A_3.pt")

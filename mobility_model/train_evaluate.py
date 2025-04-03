@@ -1,6 +1,6 @@
 from MetaMobility import MetaMobility
 from model_jodie import EmbeddingInitializer, PositionalEncoder
-from adjacency_tensor import build_A
+#from adjacency_tensor import build_A
 
 import torch
 import numpy as np
@@ -24,11 +24,11 @@ def index_set(nb_data_start, nb_data_end, nb_events, path):
         if sum > nb_events:
             return i 
 
-def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interval, path_motif, nb_motifs, out_channels, city):
+def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interval, path_motif, out_channels, city):
 
     wandb.init(project="hour={}_emb_size={}".format(interval, embedding_dynamic_size))
 
-    data = torch.load(path + "/data_" + str(interval) + "/processed/data_0.pt")
+    data = torch.load("./processed/"+str(city)+"/data_"+str(interval)+"/data_0.pt")
     num_interaction = data.num_interaction
     num_users = data.num_users
     num_locas = data.num_locations
@@ -38,8 +38,8 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
     else: 
         num_actis = 222
     
-    idx_train = index_set(0, nb_data, int(num_interaction * 0.7), path + "/data_" + str(interval) + "/processed")
-    idx_val = index_set(idx_train, nb_data, int(num_interaction * 0.1), path + "/data_" + str(interval) + "/processed")
+    idx_train = index_set(0, nb_data, int(num_interaction * 0.7), path + "/data_" + str(interval))
+    idx_val = index_set(idx_train, nb_data, int(num_interaction * 0.1), path + "/data_" + str(interval))
     
     #Gmulti_relabel, active_days = torch.load(path + "/data_"+str(interval)+"/processed/graph-days.pt")
     
@@ -53,13 +53,14 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
     num_context = len(super_edge_index)
 
     # positional encoder
-    if os.path.exists(path + "/data_" + str(interval) + "/processed/lon_lat_vector.pt"):
-        path_lon_lat = path + "/data_" + str(interval) + "/processed/lon_lat_vector.pt"
+    #if os.path.exists(path + "/data_" + str(interval) + "/processed/lon_lat_vector.pt"):
+    #    path_lon_lat = path + "/data_" + str(interval) + "/processed/lon_lat_vector.pt"
 
     # model
     path_kg = "/home/rhaton/test/MetaMobility/knowledge_graph/KG_sans_doublons/logs/03_10/NYC/GIE_11_12_31/model.pt"
-    path_static = path + "/data_" + str(interval) + "/processed/metadata.pt"
-    metaMo = MetaMobility(num_users, num_locas, num_actis, embedding_dynamic_size, path_static, path_kg, device, num_context, out_channels, path_lon_lat).to(device)
+    path_kge = path + "/data_" + str(interval) + "/kg_embedding.pt"
+    #metaMo = MetaMobility(num_users, num_locas, num_actis, embedding_dynamic_size, path_static, path_kg, device, num_context, out_channels, path_lon_lat).to(device)
+    metaMo = MetaMobility(num_users, num_locas, num_actis, embedding_dynamic_size, path_kge, path_kg, device, num_context, out_channels).to(device)
         
     # initialize embedding
     embedding_initializer = EmbeddingInitializer(embedding_dynamic_size, num_users, num_locas, num_actis, device)
@@ -117,7 +118,7 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
 
         for i in tqdm.tqdm(range(idx_train), "Train progress bar"):
             
-            events = torch.load(path + "/data_" + str(interval) +"/processed/data_" + str(i) + ".pt").events.to(device)
+            events = torch.load(path + "/data_" + str(interval) +"/data_" + str(i) + ".pt").events.to(device)
 
             # with GNN
             #X_jodie, X_meta, loss_jodie, loss_meta = metaMo.forward(X_jodie, X_meta, events, super_edge_index)
@@ -216,7 +217,7 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
 
         for i in tqdm.tqdm(range(idx_train, nb_data), "Validation and Test"):
             
-            events = torch.load(path + "/data_" + str(interval) + "/processed/data_" + str(i) + ".pt").events.to(device)
+            events = torch.load(path + "/data_" + str(interval) + "/data_" + str(i) + ".pt").events.to(device)
 
             # with GNN
             #X_jodie, loss_jodie, X_meta, loss_meta, top1, top5, top10, top20, num_interaction = metaMo.evaluate(X_jodie, X_meta, super_edge_index, events)

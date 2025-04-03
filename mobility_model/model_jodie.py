@@ -6,6 +6,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import wandb
+from torch.autograd import Variable
 
 def PositionalEncoder(path_lon_lat, sigma_min=1e-6, sigma_max=360, frequence=100):
 
@@ -72,7 +73,7 @@ class NormalLinear(nn.Linear):
             self.bias.data.normal_(0, stdv)
 
 class JODIE(nn.Module):
-    def __init__(self, embedding_dynamic_size, path_static, path_kg, num_users, num_locas, num_actis, path_lon_lat, device):
+    def __init__(self, embedding_dynamic_size, path_kge, path_kg, num_users, num_locas, num_actis, device):
         super(JODIE, self).__init__()
         torch.set_default_dtype(torch.float64)
         self.num_users = num_users
@@ -84,15 +85,17 @@ class JODIE(nn.Module):
         self.initial_user_embedding = nn.Parameter(torch.Tensor(self.embedding_dynamic_size)).to(self.device)
         self.initial_item_embedding = nn.Parameter(torch.Tensor(self.embedding_dynamic_size)).to(self.device)
         
-        self.embedding_static = torch.Tensor(torch.load(path_static).X_static).to(self.device)
-        self.embedding_static = self.embedding_static.to(torch.float64)
-        self.embedding_static_size = self.embedding_static.size(1)
+        self.embedding_static_user = Variable(torch.eye(num_users).to(self.device))
+        self.embedding_static_loca = Variable(torch.eye(num_locas).to(self.device)) 
 
-        self.embedding_kg = torch.load(path_kg)["entity.weight"].to(self.device)
+        self.embedding_static_size_users = self.num_users
+        self.embedding_static_size_locas = self.num_locas
 
-        self.positional_embedding = PositionalEncoder(path_lon_lat).to(self.device)
+        self.embedding_kg = torch.load(path_kge).to(self.device)
 
-        self.activity = torch.eye(self.num_actis).to(self.device) # identity matrix
+        #self.positional_embedding = PositionalEncoder(path_lon_lat).to(self.device)
+
+        #self.activity = torch.eye(self.num_actis).to(self.device) # identity matrix
         #self.activity = torch.zeros(self.num_actis, self.num_actis).to(self.device) # null matrix
         
         input_rnn_user_size = self.embedding_dynamic_size + self.embedding_kg.size(1) + 1 #+ self.activity.size(1) #self.positional_embedding.size(1)  
@@ -103,7 +106,7 @@ class JODIE(nn.Module):
         self.layer_norm = nn.LayerNorm((1, self.embedding_dynamic_size + self.embedding_kg.size(1))).to(self.device)
         
         #self.layer_before_concat = nn.Linear(self.embedding_kg.size(1), self.embedding_dynamic_size)
-        self.layer_prediction = nn.Linear(2 * self.embedding_static_size + 2 * self.embedding_dynamic_size + self.embedding_kg.size(1) , self.embedding_static_size + self.embedding_dynamic_size)
+        self.layer_prediction = nn.Linear(self.embedding_static_size_users + self.embedding_static_size_locas + 2 * self.embedding_dynamic_size + self.embedding_kg.size(1) , self.embedding_static_size_locas + self.embedding_dynamic_size)
 
     def replace_update(self, X, idx, vector):
         tmp = X.detach().clone()
@@ -117,6 +120,7 @@ class JODIE(nn.Module):
         for idx_user, idx_loca, time, delta_u, delta_l, idx_prev, idx_cate, idx_prev_cate, idx_know in events:
             #print(idx_user, idx_loca, idx_prev, idx_cate)
             idx_spat = [int(idx_prev)]
+            idx_static = [int(idx_prev)]
             idx_loca = [int(idx_loca + self.num_users)]
             idx_prev = [int(idx_prev + self.num_users)]
             idx_user = [int(idx_user)]
@@ -135,16 +139,16 @@ class JODIE(nn.Module):
 
             embedding_user_loca_meta = torch.cat([projected_embedding_user,
                                                   embedding_loca_acti_norm,
-                                                  self.embedding_static[idx_prev, :],
-                                                  self.embedding_static[idx_user, :]],
+                                                  self.embedding_static_loca[idx_static, :],
+                                                  self.embedding_static_user[idx_user, :]],
                                                   dim=1)
 
             embedding_predict = self.predict_embedding_loca(embedding_user_loca_meta)
 
             loss = loss + torch.nn.MSELoss()(embedding_predict, 
-                                             torch.cat([embedding[idx_loca, :], self.embedding_static[idx_loca, :]], dim=1).detach())
+                                             torch.cat([embedding[idx_loca, :], self.embedding_static_loca[idx_static, :]], dim=1).detach())
             wandb.log({"loss_pred":torch.nn.MSELoss()(embedding_predict, 
-                                             torch.cat([embedding[idx_loca, :], self.embedding_static[idx_loca, :]], dim=1).detach())})
+                                             torch.cat([embedding[idx_loca, :], self.embedding_static_loca[idx_static, :]], dim=1).detach())})
 
             update_embedding_user = self.update_rnn_user(embedding[idx_user, :], 
                                                          embedding[idx_loca, :],
@@ -212,6 +216,7 @@ class JODIE(nn.Module):
         for idx_user, idx_loca, time, delta_u, delta_l, idx_prev, idx_cate, idx_prev_cate, idx_know in events:
             #print(idx_user, idx_loca, idx_prev, idx_cate)
             idx_spat = [int(idx_prev)]
+            idx_static = [int(idx_prev)]
             idx_loca = [int(idx_loca + self.num_users)]
             idx_prev = [int(idx_prev + self.num_users)]
             idx_user = [int(idx_user)]
@@ -225,19 +230,19 @@ class JODIE(nn.Module):
             
             embedding_user_loca_meta = torch.cat([X_proj,
                                                   embedding_loca_acti_norm, 
-                                                  self.embedding_static[idx_prev, :], 
-                                                  self.embedding_static[idx_user, :]],
+                                                  self.embedding_static_loca[idx_static, :], 
+                                                  self.embedding_static_user[idx_user, :]],
                                                   dim=1)
     
             embedding_predict = self.predict_embedding_loca(embedding_user_loca_meta)    
             
             loss += torch.nn.MSELoss()(embedding_predict, 
                                        torch.cat([embedding[idx_loca, :], 
-                                                  self.embedding_static[idx_loca, :]], dim=1).detach())
+                                                  self.embedding_static_loca[idx_static, :]], dim=1).detach())
     
             euclidean_dist = torch.nn.PairwiseDistance()(embedding_predict.repeat(self.num_locas, 1), 
                                                          torch.cat([embedding[self.num_users:, :], 
-                                                                    self.embedding_static[self.num_users:, :]], dim=1).detach())
+                                                                    self.embedding_static_loca], dim=1).detach())
             #print(torch.argmin(euclidean_dist).item(), idx_loca[0])
             if torch.argmin(euclidean_dist).item() == idx_loca[0] - self.num_users:
                 top1 += 1

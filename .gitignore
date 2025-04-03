@@ -33,3 +33,6 @@ models/__pycache__/
 optimizers/__pycache__/
 train_Copy1.py
 utils/__pycache__/
+mobility_model/wandb/
+mobility_model/processed/
+mobility_model/newyork/
