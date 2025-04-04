@@ -122,6 +122,7 @@ class KGModel(nn.Module, ABC):
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor] with embeddings to regularize
         """
+        queries = queries.to("cuda")
         head_e = self.entity(queries[:, 0])
         rel_e = self.rel(queries[:, 1])
         rhs_e = self.entity(queries[:, 2])

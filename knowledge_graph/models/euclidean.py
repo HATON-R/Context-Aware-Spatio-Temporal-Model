@@ -24,6 +24,7 @@ class BaseE(KGModel):
 
     def get_rhs(self, queries, eval_mode):
         """Get embeddings and biases of target entities."""
+        queries = queries.to("cuda")
         if eval_mode:
             return self.entity.weight, self.bt.weight
         else:
@@ -49,6 +50,7 @@ class TransE(BaseE):
         self.sim = "dist"
 
     def get_queries(self, queries):
+        queries = queries.to("cuda")
         head_e = self.entity(queries[:, 0])
         rel_e = self.rel(queries[:, 1])
         lhs_e = head_e + rel_e

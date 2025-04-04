@@ -35,6 +35,7 @@ class BaseH(KGModel):
         self.c2 = nn.Parameter(c_init2, requires_grad=True)
 
     def get_rhs(self, queries, eval_mode):
+        queries = queries.to("cuda")
         if eval_mode:
             return self.entity.weight, self.bt.weight
         else:
@@ -57,7 +58,7 @@ class GIE(BaseH):
         self.context_vec = nn.Embedding(self.sizes[1], self.rank)
         self.context_vec.weight.data = self.init_size * torch.randn((self.sizes[1], self.rank), dtype=self.data_type)
         self.act = nn.Softmax(dim=1)
-        device = torch.device("cpu")
+        device = torch.device("cuda")
         if args.dtype == "double":
             self.scale = torch.Tensor([1. / np.sqrt(self.rank)]).double().to(device)
         else:
@@ -65,6 +66,7 @@ class GIE(BaseH):
 
     def get_queries(self, queries):
 
+        queries = queries.to("cuda")
         c1 = F.softplus(self.c1[queries[:, 1]])
         head1 = expmap0(self.entity(queries[:, 0]), c1)
         rel1, rel2 = torch.chunk(self.rel(queries[:, 1]), 2, dim=1)
