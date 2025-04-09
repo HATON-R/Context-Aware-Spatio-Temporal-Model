@@ -6,7 +6,7 @@ LOG_DIR = './logs'
 def get_savedir(model, dataset):
     """Get unique saving directory name."""
     dt = datetime.datetime.now()
-    date = dt.strftime("%m_%d")
+    date = dt.strftime("%d_%m")
     save_dir = os.path.join(
         LOG_DIR, date, dataset,
         model + dt.strftime('_%H_%M_%S')
