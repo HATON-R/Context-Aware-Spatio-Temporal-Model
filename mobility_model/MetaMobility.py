@@ -5,7 +5,7 @@ from torch import nn
 import math
 
 class MetaMobility(nn.Module):
-    def __init__(self, num_users, num_locas, num_actis, embedding_dynamic_size, path_kge, path_kg, device, num_context, out_channels):#, path_lon_lat):
+    def __init__(self, num_users, num_locas, num_actis, embedding_dynamic_size, path_kge, path_kg, device, num_context, out_channels, KG=False, city="newyork", edges_index_path=None):#, path_lon_lat):
         super(MetaMobility, self).__init__()
         self.device = device
         self.embedding_dynamic_size = embedding_dynamic_size
@@ -16,9 +16,12 @@ class MetaMobility(nn.Module):
         self.num_actis = num_actis
         self.num_context = num_context
         self.out_channels = out_channels
+        self.KG = KG
+        self.city = city
+        self.edges_index_path = edges_index_path
         #self.path_lon_lat = path_lon_lat
         #self.jodie = JODIE(self.embedding_dynamic_size, path_static, path_kg, self.num_users, self.num_locas, self.num_actis, self.path_lon_lat, self.device).to(self.device)
-        self.jodie = JODIE(self.embedding_dynamic_size, path_kge, path_kg, self.num_users, self.num_locas, self.num_actis, self.device).to(self.device)
+        self.jodie = JODIE(self.embedding_dynamic_size, path_kge, path_kg, self.num_users, self.num_locas, self.num_actis, self.device, self.KG, self.city, self.edges_index_path).to(self.device)
         #self.metaGCNConv = METAGCNConv(self.num_context, self.embedding_dynamic_size, self.out_channels, "cpu")#self.device)
         
     def forward(self, X_jodie, X_meta, events, super_edge_index):

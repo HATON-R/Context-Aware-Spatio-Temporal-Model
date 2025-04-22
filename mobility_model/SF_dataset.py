@@ -25,12 +25,13 @@ warnings.filterwarnings('ignore')
 
 class create_batch(Dataset):
 
-    def __init__(self, root, interval, data_path, name_city, matching_path, kge_path, transform=None, pre_transform=None, pre_filter=None):
+    def __init__(self, root, interval, data_path, name_city, matching_path, kge_path, kg_model, transform=None, pre_transform=None, pre_filter=None):
         self.interval = interval
         self.data_path = data_path
         self.name_city = name_city
         self.matching_path = matching_path
         self.kge_path = kge_path
+        self.kg_model = kg_model
         super().__init__(root, transform)
 
     @property
@@ -57,10 +58,10 @@ class create_batch(Dataset):
     def process(self):
         idx = 0
 
-        print("Files saved at this path",osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval)))
+        print("Files saved at this path", osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval)))
         kge = torch.load(self.kge_path +"/model.pt")["entity.weight"]
-        os.makedirs(osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval)), exist_ok=True)
-        torch.save(kge, osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval) + "/kg_embedding.pt"))
+        os.makedirs(osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval)), exist_ok=True)
+        torch.save(kge, osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval) + "/kg_embedding.pt"))
         
         df = pd.read_csv(self.data_path)
         df_time = self.create_time(df)
@@ -70,10 +71,8 @@ class create_batch(Dataset):
         df_interval = self.columns_interval(df_user_loca_cate)
         df_delta = self.delta(df_interval)
         df_previous = self.previous(df_delta)
-        #df_final = df_previous
         df_final = self.matching_GM_KG(df_previous)
         df_final.to_csv(osp.join(osp.join(self.processed_dir, self.name_city), self.name_city + ".csv"), index=False)
-        #df_final["test"] = df_final.iloc[:, 0]
         
         # Create batch
         batch = [group.values.tolist() for _, group in df_final.groupby(str(self.interval) + "h_interval")]
@@ -96,7 +95,7 @@ class create_batch(Dataset):
                         num_activities=num_actis
                        )
             
-            torch.save(data, osp.join(self.processed_dir, self.name_city+"/data_" + str(self.interval) + "/data_" + str(idx) + ".pt"))
+            torch.save(data, osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval) + "/data_" + str(idx) + ".pt"))
             idx += 1
 
     def create_time(self, dataframe):
@@ -345,6 +344,8 @@ class create_batch(Dataset):
         user = 0
         loca = 0
         cat = 0
+
+        user_id_list = df.user_id.unique().tolist()
         
         for u, l, t, lat, lon, c, c_id in df.itertuples(index=False):
             if u not in new_id_user:
@@ -362,6 +363,19 @@ class create_batch(Dataset):
         df["user_id"] = df["user_id"].map(new_id_user)
         df["location_id"] = df["location_id"].map(new_id_loca)
         df["categorie_id"] = df["categorie"].map(new_id_cat)
+
+        if self.name_city == "sanfrancisco":
+            url = "https://snap.stanford.edu/data/loc-gowalla_edges.txt.gz"
+            friends = pd.read_csv(url, sep='\t', header=0, names=['user_1', 'user_2'])
+            # Filter on SF
+            friends_SF = friends[friends['user_1'].isin(user_id_list) & friends['user_2'].isin(user_id_list)]
+            # Same mapping
+            friends_SF["user_1"] = friends_SF["user_1"].map(new_id_user)
+            friends_SF["user_2"] = friends_SF["user_2"].map(new_id_user)
+
+            edges = friends_SF[["user_1", "user_2"]].values
+            edges_index = torch.tensor(edges.T, dtype=torch.long)
+            torch.save(edges_index, osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval) + "/edges_index.pt"))
 
         return df
 
@@ -401,11 +415,11 @@ class create_batch(Dataset):
 
     def matching_GM_KG(self, df):
                 
-        matching = pd.read_csv(self.matching_path, header=None, names=["location_id", "KG"], sep=" ")
-        matching = matching[matching['location_id'].str.startswith('POI/')]
-        matching['location_id'] = matching['location_id'].str.extract(r'POI/(\d+)').astype("int")
+        matching = pd.read_csv(self.matching_path, header=None, names=["previous", "KG"], sep=" ")
+        matching = matching[matching['previous'].str.startswith('POI/')]
+        matching['previous'] = matching['previous'].str.extract(r'POI/(\d+)').astype("int")
 
-        df_merge = df.merge(matching[['location_id', 'KG']], on='location_id', how='left').sort_values("KG")
+        df_merge = df.merge(matching[['previous', 'KG']], on='previous', how='left').sort_values("KG")
         df_merge['KG'] = df_merge['KG'].fillna(-1)
         df_merge['KG'] = df_merge['KG'].astype(int)
         

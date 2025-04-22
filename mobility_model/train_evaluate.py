@@ -24,11 +24,11 @@ def index_set(nb_data_start, nb_data_end, nb_events, path):
         if sum > nb_events:
             return i 
 
-def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interval, path_motif, out_channels, city):
+def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interval, kg_model, out_channels, city, lr, KG):
 
     wandb.init(project="hour={}_emb_size={}".format(interval, embedding_dynamic_size))
 
-    data = torch.load("./processed/"+str(city)+"/data_"+str(interval)+"/data_0.pt")
+    data = torch.load("./processed/"+str(city)+"/"+kg_model+"/data_"+str(interval)+"/data_0.pt")
     num_interaction = data.num_interaction
     num_users = data.num_users
     num_locas = data.num_locations
@@ -57,10 +57,11 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
     #    path_lon_lat = path + "/data_" + str(interval) + "/processed/lon_lat_vector.pt"
 
     # model
-    path_kg = "/home/rhaton/test/MetaMobility/knowledge_graph/KG_sans_doublons/logs/03_10/NYC/GIE_11_12_31/model.pt"
+    path_kg = "/home/rhaton/creat-knowledge-graph/knowledge_graph/logs/10_04/NYC_JSC/KG_11_08_47/model.pt"
     path_kge = path + "/data_" + str(interval) + "/kg_embedding.pt"
+    edges_index_path = path + "/data_" + str(interval) + "/edges_index.pt"
     #metaMo = MetaMobility(num_users, num_locas, num_actis, embedding_dynamic_size, path_static, path_kg, device, num_context, out_channels, path_lon_lat).to(device)
-    metaMo = MetaMobility(num_users, num_locas, num_actis, embedding_dynamic_size, path_kge, path_kg, device, num_context, out_channels).to(device)
+    metaMo = MetaMobility(num_users, num_locas, num_actis, embedding_dynamic_size, path_kge, path_kg, device, num_context, out_channels, KG, city, edges_index_path).to(device)
         
     # initialize embedding
     embedding_initializer = EmbeddingInitializer(embedding_dynamic_size, num_users, num_locas, num_actis, device)
@@ -72,7 +73,7 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
     kmeans = KMeans(n_clusters=5, random_state=0)
 
     #opt = torch.optim.Adam(metaMo.parameters(), lr=1e-3, weight_decay=1e-5)
-    opt_jodie = torch.optim.Adam(metaMo.jodie.parameters(), lr=1e-3, weight_decay=1e-5)
+    opt_jodie = torch.optim.Adam(metaMo.jodie.parameters(), lr=lr, weight_decay=1e-5)
     #opt_meta = torch.optim.Adam(metaMo.metaGCNConv.parameters(), lr=1e-3, weight_decay=1e-5)
 
     train_loss = 0
@@ -90,23 +91,6 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
     epoch_loss_train = []
     epoch_loss_val = []
     epoch_loss_test = []
-
-    """
-    idx_user = []
-    idx_loca = []
-    for i in range(nb_data):
-        data = torch.load(path + "/data_" + str(interval) + "/processed/data_" + str(i) + ".pt")
-        for u, l, _, _, _, _, _, _ in data.events.to(device):
-            idx_user.append(int(u))
-            idx_loca.append(int(l))
-    count_user = Counter(idx_user)
-    sorted_user = sorted(count_user.items())
-    count_loca = Counter(idx_loca)
-    sorted_loca = sorted(count_loca.items())
-    num_occurence = []
-    for _, occ in chain(sorted_user, sorted_loca):
-        num_occurence.append(occ)
-    """
 
     torch.autograd.set_detect_anomaly(True)
 

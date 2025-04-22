@@ -3,13 +3,13 @@ import datetime
 import os
 
 LOG_DIR = './logs'
-def get_savedir(model, dataset):
+def get_savedir(kg, dataset, model):
     """Get unique saving directory name."""
     dt = datetime.datetime.now()
     date = dt.strftime("%d_%m")
     save_dir = os.path.join(
         LOG_DIR, date, dataset,
-        model + dt.strftime('_%H_%M_%S')
+        kg + dt.strftime('_%H_%M_%S'), model
     )
     os.makedirs(save_dir)
     return save_dir
