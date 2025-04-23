@@ -105,8 +105,8 @@ class JODIE(nn.Module):
         input_rnn_loca_size = self.embedding_dynamic_size + 1
 
         if self.KG:        
-            input_rnn_user_size = self.embedding_dynamic_size + self.embedding_kg.size(1) + 1   
-            input_rnn_loca_size = self.embedding_dynamic_size + self.embedding_kg.size(1) + 1
+            input_rnn_user_size = self.embedding_dynamic_size + 1 + self.embedding_kg.size(1)
+            input_rnn_loca_size = self.embedding_dynamic_size + 1 + self.embedding_kg.size(1)
 
         if self.city == "sanfrancisco":
             self.layer_linear = nn.Linear(self.embedding_dynamic_size, self.embedding_dynamic_size)

@@ -36,3 +36,4 @@ utils/__pycache__/
 mobility_model/wandb/
 mobility_model/processed/
 mobility_model/newyork/
+mobility_model/exp_a_faire.txt
