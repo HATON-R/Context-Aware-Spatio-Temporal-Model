@@ -82,14 +82,14 @@ class create_batch(Dataset):
         num_actis = len(df_final.categorie_id.unique())
         for i, interaction in tqdm.tqdm(enumerate(batch)):
             events = []
-            for user, loca, time, delta_u, delta_l, _, _, _, _, _, _, lat, lon, _, prev_loca_id, cate, cate_id, prev_cate_id, know in interaction:
-                events.append([user, loca, time, delta_u, delta_l, prev_loca_id, cate_id, prev_cate_id, know])
+            for user, loca, time, delta_u, delta_l, _, _, _, _, _, _, lat, lon, _, prev_loca_id, cate, cate_id, prev_cate_id, know_prev, know in interaction:
+                events.append([user, loca, time, delta_u, delta_l, prev_loca_id, cate_id, prev_cate_id, know_prev, know])
             events = np.array(events)
             events = torch.tensor(events)
 
             data = Data(events=events,
                         num_interaction=num_interaction,
-                        events_col=["user_id", "location_id", "timestamp", "delta_u", "delta_l", "previous", "categorie_id", "previous_cat", "KG" ],
+                        events_col=["user_id", "location_id", "timestamp", "delta_u", "delta_l", "previous", "categorie_id", "previous_cat", "KG_prev", "KG"],
                         num_users=num_users,
                         num_locations=num_locas,
                         num_activities=num_actis
@@ -415,11 +415,19 @@ class create_batch(Dataset):
 
     def matching_GM_KG(self, df):
                 
-        matching = pd.read_csv(self.matching_path, header=None, names=["previous", "KG"], sep=" ")
+        matching = pd.read_csv(self.matching_path, header=None, names=["previous", "KG_prev"], sep=" ")
         matching = matching[matching['previous'].str.startswith('POI/')]
         matching['previous'] = matching['previous'].str.extract(r'POI/(\d+)').astype("int")
 
-        df_merge = df.merge(matching[['previous', 'KG']], on='previous', how='left').sort_values("KG")
+        df_merge = df.merge(matching[['previous', 'KG_prev']], on='previous', how='left').sort_values("KG_prev")
+        df_merge['KG_prev'] = df_merge['KG_prev'].fillna(-1)
+        df_merge['KG_prev'] = df_merge['KG_prev'].astype(int)
+
+        matching = pd.read_csv(self.matching_path, header=None, names=["location_id", "KG"], sep=" ")
+        matching = matching[matching['location_id'].str.startswith('POI/')]
+        matching['location_id'] = matching['location_id'].str.extract(r'POI/(\d+)').astype("int")
+
+        df_merge = df.merge(matching[['location_id', 'KG']], on='location_id', how='left').sort_values("KG")
         df_merge['KG'] = df_merge['KG'].fillna(-1)
         df_merge['KG'] = df_merge['KG'].astype(int)
         
