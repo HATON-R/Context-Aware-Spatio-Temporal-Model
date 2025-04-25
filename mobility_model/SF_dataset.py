@@ -414,21 +414,20 @@ class create_batch(Dataset):
         return df[["user_id", "location_id", "timestamp", "delta_u", "delta_l", "3h_interval", "6h_interval", "12h_interval", "24h_interval", "48h_interval", "72h_interval", "latitude", "longitude", "datetime", "previous", "categorie", "categorie_id", "previous_cat"]].sort_values("timestamp")
 
     def matching_GM_KG(self, df):
-                
-        matching = pd.read_csv(self.matching_path, header=None, names=["previous", "KG_prev"], sep=" ")
-        matching = matching[matching['previous'].str.startswith('POI/')]
-        matching['previous'] = matching['previous'].str.extract(r'POI/(\d+)').astype("int")
-
-        df_merge = df.merge(matching[['previous', 'KG_prev']], on='previous', how='left').sort_values("KG_prev")
-        df_merge['KG_prev'] = df_merge['KG_prev'].fillna(-1)
-        df_merge['KG_prev'] = df_merge['KG_prev'].astype(int)
-
-        matching = pd.read_csv(self.matching_path, header=None, names=["location_id", "KG"], sep=" ")
-        matching = matching[matching['location_id'].str.startswith('POI/')]
-        matching['location_id'] = matching['location_id'].str.extract(r'POI/(\d+)').astype("int")
-
-        df_merge = df.merge(matching[['location_id', 'KG']], on='location_id', how='left').sort_values("KG")
-        df_merge['KG'] = df_merge['KG'].fillna(-1)
-        df_merge['KG'] = df_merge['KG'].astype(int)
-        
-        return df_merge.sort_values("timestamp")
+    	matching = pd.read_csv(self.matching_path, header=None, names=["raw", "KG"], sep=" ")
+    	
+    	matching_prev = matching[matching['raw'].str.startswith('POI/')].copy()
+    	matching_prev['previous'] = matching_prev['raw'].str.extract(r'POI/(\d+)').astype(int)
+    	matching_prev = matching_prev[['previous', 'KG']].rename(columns={'KG': 'KG_prev'})
+    	
+    	matching_loc = matching[matching['raw'].str.startswith('POI/')].copy()
+    	matching_loc['location_id'] = matching_loc['raw'].str.extract(r'POI/(\d+)').astype(int)
+    	matching_loc = matching_loc[['location_id', 'KG']]
+    	
+    	df = df.merge(matching_prev, on='previous', how='left')
+    	df = df.merge(matching_loc, on='location_id', how='left')
+    	
+    	df['KG_prev'] = df['KG_prev'].fillna(-1).astype(int)
+    	df['KG'] = df['KG'].fillna(-1).astype(int)
+    	
+    	return df.sort_values("timestamp")

@@ -127,7 +127,7 @@ class JODIE(nn.Module):
     def forward(self, embedding, events):
         loss = 0
         
-        for idx_user, idx_loca, timestamp, delta_u, delta_l, idx_prev, idx_cate, idx_prev_cate, idx_know in events:
+        for idx_user, idx_loca, timestamp, delta_u, delta_l, idx_prev, idx_cate, idx_prev_cate, idx_know_prev, idx_know in events:
             
             idx_spat = [int(idx_prev)]
             idx_static = [int(idx_prev)]
@@ -160,7 +160,6 @@ class JODIE(nn.Module):
             if self.KG:
                 embedding_user_loca_meta = torch.cat([projected_embedding_user,
                                                     embedding[idx_prev, :],
-                                                    #embedding_loca_acti_norm,
                                                     self.embedding_static_loca[idx_static, :],
                                                     self.embedding_static_user[idx_user, :]],
                                                     dim=1)
@@ -236,7 +235,7 @@ class JODIE(nn.Module):
         top10 = 0
         top20 = 0
         #print(events[0])
-        for idx_user, idx_loca, time, delta_u, delta_l, idx_prev, idx_cate, idx_prev_cate, idx_know in events:
+        for idx_user, idx_loca, time, delta_u, delta_l, idx_prev, idx_cate, idx_prev_cate, idx_know_prev, idx_know in events:
             #print(idx_user, idx_loca, idx_prev, idx_cate)
             idx_spat = [int(idx_prev)]
             idx_static = [int(idx_prev)]

@@ -27,14 +27,20 @@ if __name__ == '__main__':
    
     path = os.path.join(os.getcwd(), "processed/"+args.city, args.KG_model)
 
-    if args.city == "newyork":
-        dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/dataset_TSMC2014_NYC.csv", name_city=args.city, matching_path="../knowledge_graph/logs/09_04/NYC_JSC/KG_13_23_32/entity2id_NYC_JSC.txt", kge_path="../knowledge_graph/logs/09_04/NYC_JSC/KG_13_23_32", kg_model=args.KG_model)
-    
-    if args.city == "sanfrancisco":
-        dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/sanfrancisco.csv", name_city=args.city, matching_path="../knowledge_graph/logs/09_04/NYC_JSC/KG_13_23_32/entity2id_NYC_JSC.txt", kge_path="../knowledge_graph/logs/09_04/NYC_JSC/KG_13_23_32", kg_model=args.KG_model)
+    if args.KG:
 
-    if args.city == "tokyo":
-        dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/dataset_TSMC2014_TKY.csv", name_city=args.city, matching_path="../knowledge_graph/Data_processed/TKY/entity2id_TKY.txt", kge_path="../knowledge_graph/logs/03_21/TKY/GIE_17_27_47")
+        if args.city == "newyork":
+            dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/dataset_TSMC2014_NYC.csv", name_city=args.city, matching_path="../knowledge_graph/logs/09_04/NYC_JSC/KG_13_23_32/entity2id_NYC_JSC.txt", kge_path="../knowledge_graph/logs/09_04/NYC_JSC/KG_13_23_32", kg_model=args.KG_model)
+        
+        if args.city == "sanfrancisco":
+            dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/sanfrancisco.csv", name_city=args.city, matching_path="../knowledge_graph/logs/09_04/NYC_JSC/KG_13_23_32/entity2id_NYC_JSC.txt", kge_path="../knowledge_graph/logs/09_04/NYC_JSC/KG_13_23_32", kg_model=args.KG_model)
+
+        if args.city == "tokyo":
+            dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/dataset_TSMC2014_TKY.csv", name_city=args.city, matching_path="../knowledge_graph/Data_processed/TKY/entity2id_TKY.txt", kge_path="../knowledge_graph/logs/03_21/TKY/GIE_17_27_47")
+    
+    else:
+        dataset = create_batch(root="./", interval=args.hour, data_path="./datasets/dataset_TSMC2014_NYC.csv", name_city=args.city, matching_path="../knowledge_graph/logs/09_04/NYC_JSC/KG_13_23_32/entity2id_NYC_JSC.txt", kge_path="../knowledge_graph/logs/09_04/NYC_JSC/KG_13_23_32", kg_model=args.KG_model)
+
 
 
     folder_path = os.path.join(os.getcwd(), "processed/" + args.city, args.KG_model + "/data_" + str(args.hour))
