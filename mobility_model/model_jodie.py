@@ -306,6 +306,6 @@ class JODIE(nn.Module):
             loss = loss + torch.nn.MSELoss()(update_embedding_loca, embedding[idx_loca, :].detach()) 
 
             embedding[idx_user, :] = update_embedding_user
-            embedding[idx_loca, :] = update_embedding_loca            
+            embedding[idx_loca, :] = update_embedding_loca
             #break
         return embedding, loss, top1, top5, top10, top20, num_interaction
