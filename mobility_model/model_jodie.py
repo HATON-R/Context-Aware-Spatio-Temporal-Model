@@ -118,7 +118,7 @@ class JODIE(nn.Module):
         self.layer_prediction = nn.Linear(self.embedding_static_size_users + self.embedding_static_size_locas + self.embedding_dynamic_size, self.embedding_static_size_locas + self.embedding_dynamic_size)
 
         if self.KG:
-            self.layer_prediction = nn.Linear(self.embedding_static_size_users + self.embedding_static_size_locas + 2 * self.embedding_dynamic_size, self.embedding_static_size_locas + self.embedding_dynamic_size)
+            self.layer_prediction = nn.Linear(self.embedding_static_size_users + self.embedding_static_size_locas + 2 * self.embedding_dynamic_size + self.embedding_kg.size(1), self.embedding_static_size_locas + self.embedding_dynamic_size)
 
     def aggregator(self, X, subset_edges_index):
         out = self.layer_linear(X[subset_edges_index].mean(dim=0)).relu()
@@ -136,6 +136,7 @@ class JODIE(nn.Module):
             idx_user = [int(idx_user)]
             idx_prev_cate = [int(idx_prev_cate)]
             idx_know = [int(idx_know)]
+            idx_know_prev = [int(idx_know_prev)]
 
             if self.city == "sanfrancisco":
                 tim = time.time()
@@ -160,6 +161,7 @@ class JODIE(nn.Module):
             if self.KG:
                 embedding_user_loca_meta = torch.cat([projected_embedding_user,
                                                     embedding[idx_prev, :],
+                                                    self.embedding_kg[idx_know_prev,:],
                                                     self.embedding_static_loca[idx_static, :],
                                                     self.embedding_static_user[idx_user, :]],
                                                     dim=1)
@@ -181,15 +183,11 @@ class JODIE(nn.Module):
             update_embedding_user = self.update_rnn_user(embedding[idx_user, :], 
                                                          embedding[idx_loca, :],
                                                          idx_know,
-                                                         #self.positional_embedding[idx_spat, :],
-                                                         #self.activity[idx_cate, :],
                                                          torch.Tensor([delta_u]).to(self.device))
             
             update_embedding_loca = self.update_rnn_loca(embedding[idx_loca, :], 
                                                          embedding[idx_user, :],
                                                          idx_know,
-                                                         #self.positional_embedding[idx_spat, :],
-                                                         #self.activity[idx_cate, :],
                                                          torch.Tensor([delta_l]).to(self.device))
             
             loss = loss + torch.nn.MSELoss()(update_embedding_user, embedding[idx_user, :].detach())
@@ -244,6 +242,7 @@ class JODIE(nn.Module):
             idx_user = [int(idx_user)]
             idx_prev_cate = [int(idx_prev_cate)]
             idx_know = [int(idx_know)]
+            idx_know_prev = [int(idx_know_prev)]
             
             num_interaction += 1
             X_proj = self.projection(embedding[idx_user, :], torch.Tensor([delta_u]).to(self.device))
@@ -257,7 +256,7 @@ class JODIE(nn.Module):
             if self.KG:
                 embedding_user_loca_meta = torch.cat([X_proj,
                                                     embedding[idx_prev, :],
-                                                    #embedding_loca_acti_norm, 
+                                                    self.embedding_kg[idx_know_prev, :],
                                                     self.embedding_static_loca[idx_static, :], 
                                                     self.embedding_static_user[idx_user, :]],
                                                     dim=1)
@@ -296,15 +295,11 @@ class JODIE(nn.Module):
             update_embedding_user = self.update_rnn_user(embedding[idx_user, :], 
                                                           embedding[idx_loca, :],
                                                           idx_know,
-                                                          #self.positional_embedding[idx_spat, :],
-                                                          #self.activity[idx_cate, :],
                                                           torch.Tensor([delta_u]).to(self.device))
             
             update_embedding_loca = self.update_rnn_loca(embedding[idx_loca, :], 
                                                           embedding[idx_user, :], 
                                                           idx_know,
-                                                          #self.positional_embedding[idx_spat, :],
-                                                          #self.activity[idx_cate, :],
                                                           torch.Tensor([delta_l]).to(self.device))
 
             loss = loss + torch.nn.MSELoss()(update_embedding_user, embedding[idx_user, :].detach())
