@@ -19,7 +19,7 @@ import seaborn as sns
 def index_set(nb_data_start, nb_data_end, nb_events, path):
     sum = 0
     for i in range(nb_data_start, nb_data_end):
-        events = torch.load(path + "/data_"+str(i)+".pt").events
+        events = torch.load(path + "/data_"+str(i)+".pt", weights_only=False).events
         sum += events.shape[0]
         if sum > nb_events:
             return i 
@@ -28,7 +28,7 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
 
     wandb.init(project="hour={}_emb_size={}".format(interval, embedding_dynamic_size))
 
-    data = torch.load("./processed/"+str(city)+"/"+kg_model+"/data_"+str(interval)+"/data_0.pt")
+    data = torch.load("./processed/"+str(city)+"/"+kg_model+"/data_"+str(interval)+"/data_0.pt", weights_only=False)
     num_interaction = data.num_interaction
     num_users = data.num_users
     num_locas = data.num_locations
@@ -101,8 +101,9 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
         test_rank = []
 
         for i in tqdm.tqdm(range(idx_train), "Train progress bar"):
+            break
             
-            events = torch.load(path + "/data_" + str(interval) +"/data_" + str(i) + ".pt").events.to(device)
+            events = torch.load(path + "/data_" + str(interval) +"/data_" + str(i) + ".pt", weights_only=False).events.to(device)
 
             # with GNN
             #X_jodie, X_meta, loss_jodie, loss_meta = metaMo.forward(X_jodie, X_meta, events, super_edge_index)
@@ -201,7 +202,7 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
 
         for i in tqdm.tqdm(range(idx_train, nb_data), "Validation and Test"):
             
-            events = torch.load(path + "/data_" + str(interval) + "/data_" + str(i) + ".pt").events.to(device)
+            events = torch.load(path + "/data_" + str(interval) + "/data_" + str(i) + ".pt", weights_only=False).events.to(device)
 
             # with GNN
             #X_jodie, loss_jodie, X_meta, loss_meta, top1, top5, top10, top20, num_interaction = metaMo.evaluate(X_jodie, X_meta, super_edge_index, events)
@@ -345,7 +346,7 @@ def train_evaluate(path, embedding_dynamic_size, epoch, device, nb_data, interva
         meta_loss_epoch_test = 0
 
         # load model and optimizer for the next train epoch
-        check = torch.load(path + "/data_" + str(interval) + "/saved_models_" + str(embedding_dynamic_size) +"/models_{}".format(ep))
+        check = torch.load(path + "/data_" + str(interval) + "/saved_models_" + str(embedding_dynamic_size) +"/models_{}".format(ep), weights_only=False)
         metaMo.load_state_dict(check["model"])
         #opt.load_state_dict(check["opt"])
         opt_jodie.load_state_dict(check["opt_jodie"])

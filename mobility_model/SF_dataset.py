@@ -1,4 +1,4 @@
-import skmob
+#import skmob
 import time
 import numpy as np
 import networkx as nx
@@ -16,7 +16,7 @@ import glob
 from pathlib import Path
 from torch_geometric.data import Dataset, download_url, Data
 import re
-from torch_scatter import scatter_add
+#from torch_scatter import scatter_add
 from collections import defaultdict
 from networkx.algorithms import isomorphism
 import json
@@ -45,21 +45,21 @@ class create_batch(Dataset):
 
     @property
     def kg_embedding(self):
-        kge = torch.load(self.kge_path +"/model.pt")["entity.weight"]
+        kge = torch.load(self.kge_path +"/model.pt", weights_only=False)["entity.weight"]
         return kge
 
     def len(self):
         return len(self.processed_file_names)
 
     def get(self, idx):
-        data = torch.load(os.path.join(self.processed_dir, f'data_{idx}.pt'))
+        data = torch.load(os.path.join(self.processed_dir, f'data_{idx}.pt'), weights_only=False)
         return data
 
     def process(self):
         idx = 0
 
         print("Files saved at this path", osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval)))
-        kge = torch.load(self.kge_path +"/model.pt")["entity.weight"]
+        kge = torch.load(self.kge_path +"/model.pt", weights_only=False)["entity.weight"]
         os.makedirs(osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval)), exist_ok=True)
         torch.save(kge, osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval) + "/kg_embedding.pt"))
         

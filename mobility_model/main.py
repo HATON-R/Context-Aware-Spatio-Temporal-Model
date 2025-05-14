@@ -1,3 +1,5 @@
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 from SF_dataset import create_batch
 from train_evaluate import train_evaluate
 #from model_metaGNN import METAGCNConv, loss_gnn

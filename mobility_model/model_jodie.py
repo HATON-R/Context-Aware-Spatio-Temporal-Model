@@ -12,7 +12,7 @@ import time
 
 def PositionalEncoder(path_lon_lat, sigma_min=1e-6, sigma_max=360, frequence=100):
 
-    coordinate_vector = torch.tensor(torch.load(path_lon_lat))
+    coordinate_vector = torch.tensor(torch.load(path_lon_lat, weights_only=False))
 
     # frequency 
     log_timescale_increment = (math.log(float(sigma_max) / float(sigma_min)) / (frequence*1.0 - 1))
@@ -86,7 +86,7 @@ class JODIE(nn.Module):
         self.KG = KG
         self.city = city
         if self.city == "sanfrancisco":
-            self.edges_index = torch.load(path_edges_index).to(self.device)
+            self.edges_index = torch.load(path_edges_index, weights_only=False).to(self.device)
 
         self.initial_user_embedding = nn.Parameter(torch.Tensor(self.embedding_dynamic_size)).to(self.device)
         self.initial_item_embedding = nn.Parameter(torch.Tensor(self.embedding_dynamic_size)).to(self.device)
@@ -97,7 +97,7 @@ class JODIE(nn.Module):
         self.embedding_static_size_users = self.num_users
         self.embedding_static_size_locas = self.num_locas
 
-        self.embedding_kg = torch.load(path_kge).to(self.device)
+        self.embedding_kg = torch.load(path_kge, weights_only=False).to(self.device)
 
         #self.positional_embedding = PositionalEncoder(path_lon_lat).to(self.device)
 
@@ -114,11 +114,11 @@ class JODIE(nn.Module):
         self.rnn_user = RNNCell(input_rnn_user_size, self.embedding_dynamic_size, nonlinearity="tanh").to(self.device)
         self.rnn_loca = RNNCell(input_rnn_loca_size, self.embedding_dynamic_size, nonlinearity="tanh").to(self.device)
         self.layer_projection = NormalLinear(1, self.embedding_dynamic_size).to(self.device)
-        self.layer_norm = nn.LayerNorm((1, self.embedding_dynamic_size + self.embedding_kg.size(1))).to(self.device)
+        #self.layer_norm = nn.LayerNorm((1, self.embedding_dynamic_size + self.embedding_kg.size(1))).to(self.device)
         self.layer_prediction = nn.Linear(self.embedding_static_size_users + self.embedding_static_size_locas + self.embedding_dynamic_size, self.embedding_static_size_locas + self.embedding_dynamic_size)
 
         if self.KG:
-            self.layer_prediction = nn.Linear(self.embedding_static_size_users + self.embedding_static_size_locas + 2 * self.embedding_dynamic_size + self.embedding_kg.size(1), self.embedding_static_size_locas + self.embedding_dynamic_size)
+            self.layer_prediction = nn.Linear(self.embedding_static_size_users + self.embedding_static_size_locas + 2 * self.embedding_dynamic_size + self.embedding_kg.size(1), self.embedding_static_size_locas + self.embedding_dynamic_size + self.embedding_kg.size(1))
 
     def aggregator(self, X, subset_edges_index):
         out = self.layer_linear(X[subset_edges_index].mean(dim=0)).relu()
@@ -176,9 +176,9 @@ class JODIE(nn.Module):
                 
 
             loss = loss + torch.nn.MSELoss()(embedding_predict, 
-                                             torch.cat([embedding[idx_loca, :], self.embedding_static_loca[idx_static, :]], dim=1).detach())
+                                             torch.cat([embedding[idx_loca, :], self.embedding_static_loca[idx_static, :], self.embedding_kg[idx_know, :]], dim=1).detach())
             wandb.log({"loss_pred":torch.nn.MSELoss()(embedding_predict, 
-                                             torch.cat([embedding[idx_loca, :], self.embedding_static_loca[idx_static, :]], dim=1).detach())})
+                                             torch.cat([embedding[idx_loca, :], self.embedding_static_loca[idx_static, :], self.embedding_kg[idx_know, :]], dim=1).detach())})
 
             update_embedding_user = self.update_rnn_user(embedding[idx_user, :], 
                                                          embedding[idx_loca, :],
@@ -271,11 +271,13 @@ class JODIE(nn.Module):
             
             loss += torch.nn.MSELoss()(embedding_predict, 
                                        torch.cat([embedding[idx_loca, :], 
-                                                  self.embedding_static_loca[idx_static, :]], dim=1).detach())
+                                                  self.embedding_static_loca[idx_static, :], self.embedding_kg[idx_know, :]], dim=1).detach())
+
+            print(embedding[self.num_users:, :].size() ,self.embedding_static_loca.size(), self.embedding_kg.size())
     
             euclidean_dist = torch.nn.PairwiseDistance()(embedding_predict.repeat(self.num_locas, 1), 
                                                          torch.cat([embedding[self.num_users:, :], 
-                                                                    self.embedding_static_loca], dim=1).detach())
+                                                                    self.embedding_static_loca, self.embedding_kg], dim=1).detach())
             #print(torch.argmin(euclidean_dist).item(), idx_loca[0])
             if torch.argmin(euclidean_dist).item() == idx_loca[0] - self.num_users:
                 top1 += 1
