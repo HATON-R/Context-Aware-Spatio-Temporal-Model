@@ -59,9 +59,9 @@ class create_batch(Dataset):
         idx = 0
 
         print("Files saved at this path", osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval)))
-        kge = torch.load(self.kge_path +"/model.pt", weights_only=False)["entity.weight"]
+        #kge = torch.load(self.kge_path +"/model.pt", weights_only=False)["entity.weight"]
         os.makedirs(osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval)), exist_ok=True)
-        torch.save(kge, osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval) + "/kg_embedding.pt"))
+        #torch.save(kge, osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval) + "/kg_embedding.pt"))
         
         df = pd.read_csv(self.data_path)
         df_time = self.create_time(df)
@@ -73,6 +73,9 @@ class create_batch(Dataset):
         df_previous = self.previous(df_delta)
         df_final = self.matching_GM_KG(df_previous)
         df_final.to_csv(osp.join(osp.join(self.processed_dir, self.name_city), self.name_city + ".csv"), index=False)
+
+        kge = self.kge_ordered_location_id(len(df_final.location_id.unique()))
+        torch.save(kge, osp.join(self.processed_dir, self.name_city, self.kg_model+"/data_" + str(self.interval) + "/kg_embedding.pt"))
         
         # Create batch
         batch = [group.values.tolist() for _, group in df_final.groupby(str(self.interval) + "h_interval")]
@@ -431,3 +434,35 @@ class create_batch(Dataset):
     	df['KG'] = df['KG'].fillna(-1).astype(int)
     	
     	return df.sort_values("timestamp")
+
+    def kge_ordered_location_id(self, nb_location):
+        matching = pd.read_csv(self.matching_path, header=None, names=["raw", "KG"], sep=" ")
+        matching_loc = matching[matching["raw"].str.startswith('POI/')].copy()
+        matching_loc["location_id"] = matching_loc['raw'].str.extract(r'POI/(\d+)').astype(int)
+        matchig_loc = matching_loc[["location_id", "KG"]]
+        matching_gm_kg = matching_loc.sort_values(by="KG")
+
+        df_sorted = matching_gm_kg.sort_values(by="location_id")
+        index_order = df_sorted.KG.tolist()
+
+        kge_all = torch.load(self.kge_path +"/model.pt", weights_only=False)["entity.weight"]
+        kge_full_reindex = kge_all[index_order]
+
+        id_all = list(range(nb_location))
+
+        select_id_loca = sorted(matching_gm_kg.location_id.tolist())
+
+        id_miss_kg = sorted(list(set(id_all) - set(select_id_loca)))
+
+        kge_location = kge_all[matching_gm_kg.KG.tolist()]
+        mean_vect = kge_location.mean(dim=0)
+        vec = torch.tensor([range(kge_all.size(1))])
+        matrix = mean_vect.repeat(len(id_miss_kg), 1)
+
+        kge_full_reindex2 = torch.zeros((len(id_all), matrix.shape[1]))
+        for idx, i in enumerate(select_id_loca):
+            kge_full_reindex2[i] = kge_full_reindex[idx]
+        for idx, i in enumerate(id_miss_kg):
+            kge_full_reindex2[i] = matrix[idx]          
+        
+        return kge_full_reindex2
